@@ -8,6 +8,8 @@ The code creates a single month calendar with various options for display and st
 
 The paramters to createCalendar are:
 
+```
+
   width  - (required) width of calendar 
   height - (required) height of calendar
   x - (required) an absolute positioned div is created and a calendar is placed and the x/y corrdinates
@@ -19,7 +21,7 @@ The paramters to createCalendar are:
   options:
     Pass any of the following attributes to an object to customize the calendar. (The values shown are the default values)
 
-    ```
+
 				 weekStart = 0                     Day of the week to start on 0 for Sunday 1 for Monday etc..
 				,highLightWeekend = true           Weekends can be highlighted or not
 				,highlightWrongMonths = true       The calendar is a 6x7 grid some months will not need the extra days, this option can remove the highlight 
@@ -84,7 +86,6 @@ The paramters to createCalendar are:
     bumpScale - When sizing the text the font may seem a little too small,  although it should be correct numericaly, this will alter the size a bit (% of size)
 
 ```
-
 
 
 Todo:
