@@ -93,3 +93,10 @@ You can almost add events to the calendar. See the bananna in the example.
 I plan to store these events in localStorage and add a callback so that the
 user can do something with a clicked event. Perhaps show more detail or
 navigate the page.
+
+Sillyness:
+
+You could make calendars that are unusuable.. white on white, or streched out to something dumb:
+
+![image](https://github.com/asdf23/JavaScriptCalendar/assets/4165735/d73c16cd-8546-4599-9c5b-68b1e1957a61)
+![image](https://github.com/asdf23/JavaScriptCalendar/assets/4165735/236569bf-dc48-4dac-8849-51b01c16568d)
