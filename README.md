@@ -85,5 +85,10 @@ The paramters to createCalendar are:
 
 ```
 
+
+
 Todo:
-You can almost add events to the calendar. See the bananna in the example. I plan to store these events in localStorage and add a callback so that the user can do something with a clicked event. Perhaps show more detail or navigate the page.
+You can almost add events to the calendar. See the bananna in the example.
+I plan to store these events in localStorage and add a callback so that the
+user can do something with a clicked event. Perhaps show more detail or
+navigate the page.
