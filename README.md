@@ -1,5 +1,5 @@
-# JavaScriptCalendar
-Creates a customizable SVG based calendar using JavaScript/SVG is customizable.
+# JavaScript Calendar
+Creates a customizable SVG based calendar using JavaScript/SVG 
 ![ShowAndTell](https://github.com/asdf23/JavaScriptCalendar/assets/4165735/ddc6dbe3-9299-4186-8c69-89cbd72b521b)
 
 This is an HTML file with no content. On page load createCalendar is called. This function is the "meat and potatoes" of this project.
@@ -84,3 +84,6 @@ The paramters to createCalendar are:
     bumpScale - When sizing the text the font may seem a little too small,  although it should be correct numericaly, this will alter the size a bit (% of size)
 
 ```
+
+Todo:
+You can almost add events to the calendar. See the bananna in the example. I plan to store these events in localStorage and add a callback so that the user can do something with a clicked event. Perhaps show more detail or navigate the page.
