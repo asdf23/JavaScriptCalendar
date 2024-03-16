@@ -1,519 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Calendar</title>
-	</head>
-	<body>
-	</body>
-	<script>
-		function objectHasAllProperties(object, properties) {
-			return properties.every(prop => object.hasOwnProperty(prop));
-		}
-		function adjustExistingScale(originalString, bumpScale) {
-			let regex = /scale\(([+-]?\d+(\.\d+)?)\)/g;
-			return originalString.replace(regex, (match, number) => {
-				let oldValue = parseFloat(number);
-				let newValue = oldValue + (oldValue * bumpScale);
-				newValue = newValue.toFixed(2);
-				return `scale(${newValue})`;
-			});
-		}
-		function adjustExistingY(originalString, bumpY, height) {
-			let regex = /translate\(\s*([+-]?\d+(\.\d+)?),\s*([+-]?\d+(\.\d+)?)\s*\)/g;
-			return originalString.replace(regex, (match, x, _, y) => {
-				let oldValueY = parseFloat(y);
-				let increment = height * bumpY;
-				let newValueY = oldValueY + increment;
-				newValueY = newValueY.toFixed(2);
-				return `translate(${x}, ${newValueY})`;
-			});
-		}
-		function applyAttribtesToSVGDom(d, attrs) {
-			var textAttributesSpecialCase = ["x", "y", "width", "height", "text"];
-			var textExcludeAdditionalSpecialCaseAttributes = ["bumpScale", "bumpY"];
-			if( d.tagName == "text" && objectHasAllProperties(attrs, textAttributesSpecialCase) ) {
-				//console.log("in text");
-				Object.keys(attrs)
-					.filter(f=> !textAttributesSpecialCase.includes(f))
-					.filter(f=> !textExcludeAdditionalSpecialCaseAttributes.includes(f))
-					.forEach(f=> {
-						d.setAttribute(f, attrs[f]);
-				});
-				d.setAttribute("dominant-baseline", "middle");
-				d.setAttribute("text-anchor", "middle");
-				d.textContent = attrs.text;
-				var textSize = d.getBoundingClientRect();
-				var textScale = calculateScale(attrs, textSize);
-				if("bumpScale" in attrs) {
-					textScale += textScale * attrs.bumpScale;
-				}
-				if("bumpY" in attrs) {
-					attrs.y += attrs.height * attrs.bumpY;
-				}
-				d.setAttribute("transform", `translate(${attrs.x}, ${attrs.y}) scale(${textScale})`);
-			} else {
-				if(d.tagName == "text") {
-					Object.keys(attrs)
-						.filter(f=> !textExcludeAdditionalSpecialCaseAttributes.includes(f))
-						.forEach(f=> {
-							d.setAttribute(f, attrs[f]);
-						});
-					if("bumpScale" in attrs) {
-						//console.log("was", d.getAttribute("transform"));
-						//console.log("new", adjustExistingScale(d.getAttribute("transform"), attrs.bumpScale))
-						d.setAttribute("transform", adjustExistingScale(d.getAttribute("transform"), attrs.bumpScale));
-					}
-					if("bumpY" in attrs) {
-						let height = d.getBoundingClientRect().height;
-						d.setAttribute("transform", adjustExistingY(d.getAttribute("transform"), attrs.bumpY, height));
-					}
-				}
-				for(var i in attrs) {
-					if(d.tagName == "use" && i == "xlink:href") {
-						d.setAttributeNS("http://www.w3.org/1999/xlink", 'xlink:href', attrs[i]);
-					} else {
-						d.setAttribute(i, attrs[i]);
-					}
-				}
-			}
-		}
-		function createSVGDom(tag,attrs,appendTo) {
-			var d = document.createElementNS("http://www.w3.org/2000/svg", tag);
-			if(appendTo!=null) {
-				appendTo.appendChild(d);
-			}
-			if(attrs != null) {
-				if("length" in attrs) {
-					attrs.forEach(attr=> {
-						applyAttribtesToSVGDom(d, attr);
-					});
-				} else {
-					applyAttribtesToSVGDom(d, attrs);
-				}
-			}
-			return d;
-		}
-		function createCalendar(width, height, x, y, date, options ={}, appendToChild) {
-			/*
-				0 Sun
-				1 Mon
-				2 Tues
-				3 Wed
-				4 Thu
-				5 Fri
-				6 Sat
-			*/
-			const { 
-				 weekStart = 0
-				,highLightWeekend = true
-				,highlightWrongMonths = true 
-				,useShortYear = false
-				,useShortMonthName = true
-				,useShortWeekName = true
-				,showMonthNavigation = false
-				,styleCalendar = {
-								 stroke: "black"
-								,fill:"lightgray"
-							}
-				,styleYearMonthDivider = {
-								 stroke:"black"
-								,"stroke-width": 2
-							}
-				,styleMonthDatesDivider = {
-								stroke:"black"
-							}
-				,styleDatesVerticleDivider = {
-								stroke:"black"
-							}
-				,styleDatesHorizontalDivider = {
-								stroke:"black"
-							}
-				,styleOffMonthHighlight = {
-								 fill: "black"
-								,opacity: 0.2
-							}
-				,styleDateNumberBackground = {
-								 opacity: 0.5
-								,fill:"lightblue"
-								,stroke: "black"
-							}
-				,styleWeekend = {
-								 opacity: 0.2
-								,fill: "yellow"
-							}
-				,styleYearMonthText = {
-								"font-family": "sans-serif"
-								,bumpScale: 0.3
-								,bumpY: 0.08
-							}
-				,styleWeekDayText = {
-								"font-family": "sans-serif"
-								,bumpScale: useShortWeekName ? 0.3 : 0
-								,bumpY: 0.08
-							}
-				,styleDateText = {
-								"font-family": "sans-serif"
-								,bumpScale: 0.3
-								,bumpY: 0.08
-							}
-				,styleMonthChangeControl = {
-								"font-family": "sans-serif"
-								,bumpScale: 0.3
-								,bumpY: 0.08
-								,cursor: "pointer"
-				}
-			} = options;
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Div Positioning</title>
+<style>
+    #dynamicDiv {
+        position: absolute;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+    }
+</style>
+</head>
+<body>
+<div id="dynamicDiv"></div>
 
-			if(date == null) {
-				date = new Date();
-			}
-			date = new Date(date.getFullYear(), date.getMonth(), 1);
-			
-			//var dynamicDiv = document.getElementById('dynamicDiv');
-			var dynamicDiv =  document.createElement("div");
-			dynamicDiv.style.position = "absolute";
-			dynamicDiv.style.backgroundColor = "#f0f0f0";
-			dynamicDiv.style.border = "1px solid #ccc";
-			appendToChild.appendChild(dynamicDiv);
-			var calendarID = 'calendar' + findExistingCalendars(appendToChild);
-		
-			// Constants for offsets
-			var offsetLeft = 0;
-			var offsetRight = 0;
-			var offsetTop = 20;
-			var offsetBottom = 0;
+<script>
+    // Function to create and position the calendar
+    function createCalendar(width, height, x, y) {
+        var dynamicDiv = document.getElementById('dynamicDiv');
+        var calendarID = 'calendar' + findExistingCalendars();
+        
+        // Constants for offsets
+        var offsetLeft = 10;
+        var offsetRight = 10;
+        var offsetTop = 10;
+        var offsetBottom = 0;
+        
+        // Calculate the width and height of rectDay & rectDate
+	var rectDayWidthPercentage = (100 - (offsetLeft + offsetRight)) / 7;
+	var rectDayHeightPercentage = 100 / 6;
+	var rectDateWidthPercentage = rectDayWidthPercentage * 0.25;
+	var rectDateHeightPercentage = rectDayHeightPercentage * 0.25;
+	
 
-			const monthNames = Array.from({ length: 12 }, (_, index) => {
-				const tempDate = new Date(date.getFullYear(), index, 1);
-				return {
-					longName: tempDate.toLocaleString('default', { month: 'long' }),
-					shortName: tempDate.toLocaleString('default', { month: 'short' })
-				};
-			});
+        
+        // Create the calendar div
+        var calendarDiv = document.createElement('div');
+        calendarDiv.setAttribute('id', calendarID);
+        calendarDiv.style.width = width + 'px';
+        calendarDiv.style.height = height + 'px';
+        calendarDiv.style.left = x + 'px';
+        calendarDiv.style.top = y + 'px';
+        calendarDiv.style.border = '1px solid black'; // Adding border
+        
+        // Create and append the SVG element
+        var svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svgElement.setAttribute("width", "100%"); // Set width to 100% of the container
+	svgElement.setAttribute("height", "100%"); // Set height to 100% of the container
+	//svgElement.setAttribute("viewBox", `0 0 100 100`); // Set viewBox attribute
+        
+        // Create and append the <defs> tag
+        var defsElement = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        svgElement.appendChild(defsElement);
+        
+        // Create and append the <g> tag inside <defs>
+        var gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        gElement.setAttribute("id", "calendarDate");
+        defsElement.appendChild(gElement);
+        
+        // Create and append the <rect> tag (rectDay) inside <g>
+        var rectDay = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rectDay.setAttribute("x", "0"); // Set x to 0
+        rectDay.setAttribute("y", "0"); // Set y to 0
+        rectDay.setAttribute("width", `${rectDayWidthPercentage}%`); // Set width to calculated width
+        rectDay.setAttribute("height", `${rectDayHeightPercentage}%`); // Set height to calculated height
+        rectDay.setAttribute("fill", "lightgrey"); // Set fill color
+        gElement.appendChild(rectDay);
+        
+        // Create and append the <rect> tag (rectDate) inside <g>
+        var rectDate = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rectDate.setAttribute("x", "0"); // Set x to 0
+        rectDate.setAttribute("y", "0"); // Set y to 0
+        rectDate.setAttribute("width", `${rectDateWidthPercentage}%`);
+        rectDate.setAttribute("height", `${rectDateHeightPercentage}%`);
+        rectDate.setAttribute("fill", "lightblue"); // Set fill color
+        gElement.appendChild(rectDate);
+        
+        // Create and append the <text> tag inside <g>
+        var textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textElement.textContent = "0";
+        textElement.setAttribute("x", "50%"); // Centering the text horizontally
+        textElement.setAttribute("y", "50%"); // Centering the text vertically
+        textElement.setAttribute("dominant-baseline", "middle"); // Adjusting the baseline
+        textElement.setAttribute("text-anchor", "middle"); // Adjusting the anchor point
+        gElement.appendChild(textElement);
+        
+        // Create and append the <use> tag to display calendarDate
+        var useElement = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        useElement.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#calendarDate");
+        svgElement.appendChild(useElement);
+        
+        // Append the SVG element to the calendar div
+        calendarDiv.appendChild(svgElement);
+        
+        // Append the calendar div to the dynamicDiv
+        dynamicDiv.appendChild(calendarDiv);
+    }
 
-			const weekNames = Array.from({ length: 7 }, (_, index) => {
-				const tempDate = new Date(date.getFullYear(), 0, index + 1); // January 1st, index + 1 for Sunday to Saturday
-					return {
-						longName: tempDate.toLocaleString('default', { weekday: 'long' }),
-						shortName: tempDate.toLocaleString('default', { weekday: 'short' })
-					};
-			});
+    // Function to find existing calendar divs and return the highest number
+    function findExistingCalendars() {
+        var highestNumber = 0;
+        var calendarDivs = document.querySelectorAll('div[id^="calendar"]');
+        calendarDivs.forEach(function(div) {
+            var id = parseInt(div.id.replace('calendar', ''));
+            if (id > highestNumber) {
+                highestNumber = id;
+            }
+        });
+        return highestNumber + 1; // Incrementing to get the next available number
+    }
 
-			
-			// Calculate the width and height of rectDay & rectDate
-			var rectDayWidthPercentage = (100 - (offsetLeft + offsetRight)) / 7;
-			var rectDayHeightPercentage = (100 - (offsetTop + offsetBottom)) / 6;
-			var rectDateWidthPercentage = rectDayWidthPercentage * 0.25;
-			var rectDateHeightPercentage = rectDayHeightPercentage * 0.25;
-			var textX = parseFloat(0) + parseFloat(rectDayWidthPercentage) / 2;
-			var textY = parseFloat(0) + parseFloat(rectDayHeightPercentage) / 2;
-		
-			// Create the calendar div
-			var calendarDiv = document.createElement('div');
-			calendarDiv.setAttribute('id', calendarID);
-			calendarDiv.style.width = width + 'px';
-			calendarDiv.style.height = height + 'px';
-			calendarDiv.style.left = x + 'px';
-			calendarDiv.style.top = y + 'px';
-			calendarDiv.style.position = "absolute";
-			//calendarDiv.style.border = '1px solid black'; // Adding border
-			
-			var xMonthLine = (height / 8) * 1.5;								//Horizontal line below month
-			var xWeekLine = xMonthLine + ((height / 8) * 0.5);					//Horizontal line below week
-			var yWeekLine1 = width / 7;											//Width of dates
-			var xWeekLine1 = (height / 8);										//Height of dates
-			var xDateLine1 = xWeekLine1 / 4;									//Height of #
-			var yDateLine1 = yWeekLine1 / 4;									//Width of #
-			var svgElement = createSVGDom("svg", {width:width, height:height});
-			var centerX = width / 2;
+    // Function to initialize the page
+    function init() {
+        // Constants for width, height, x, and y
+        //var width = window.innerWidth;
+        //var height = window.innerHeight;
+        var width = 400;
+        var height = 50;
+        var x = 300;
+        var y = 400;
+        
+        // Call createCalendar with the constants
+        createCalendar(width, height, x, y);
+    }
 
-			calendarDiv.appendChild(svgElement);
-			dynamicDiv.appendChild(calendarDiv);
-
-			createSVGDom("rect", [{
-								 width: width
-								,height: height
-								,rx: (width*2)/100
-								,ry: (height*2)/100
-							}, styleCalendar],svgElement);
-			var gDayHighlights = createSVGDom("g", {
-					class: "dayHighlightArea"
-				}, svgElement);
-			createSVGDom("path", [{
-								 d:`M 0,${xMonthLine} L ${width},${xMonthLine}`
-							}, styleYearMonthDivider], svgElement);
-			createSVGDom("path", [{
-								 d:`M 0,${xWeekLine} L ${width},${xWeekLine}`
-							}, styleMonthDatesDivider], svgElement);
-			for(var wl=1; wl<=6; wl++) {
-				// createSVGDom("path", {
-				// 		stroke:"red"
-				// 		,"stroke-width": 2
-				// 		,d:`M ${yWeekLine1*wl},${xMonthLine} L ${yWeekLine1*wl},${height}`}
-				// 	, svgElement);
-				createSVGDom("path", [{
-									 d:`M ${yWeekLine1*wl},${xMonthLine} L ${yWeekLine1*wl},${height}`
-								}, styleDatesVerticleDivider], svgElement);
-				if(wl < 6) {
-					createSVGDom("path", [{
-								 d:`M 0,${xWeekLine+xWeekLine1*wl} L ${width},${xWeekLine+xWeekLine1*wl}`
-								}, styleDatesHorizontalDivider], svgElement);
-				}
-			}
-
-			var dateMonth = new Date(date.getTime());
-			//console.log("Month", dateMonth);
-			while(date.getDay() != weekStart) {
-				date.setDate(date.getDate() - 1);
-			}
-			var firstDisplayDate = new Date(date.getTime());
-			var startDate = new Date(firstDisplayDate.getTime());
-			//console.log("First display date", firstDisplayDate.toLocaleString(), firstDisplayDate.getDay());
-			if(highlightWrongMonths) {
-				if(firstDisplayDate.getMonth() == dateMonth.getMonth()) {
-					//No need to highlight wrong month days
-				} else {
-					var differenceInMilliseconds = Math.abs(dateMonth.getTime() - firstDisplayDate.getTime());
-					var differenceInDays = Math.ceil(differenceInMilliseconds / (1000 * 60 * 60 * 24));
-					createSVGDom("rect", [{
-												 x:0
-												,y: xWeekLine
-												,width: yWeekLine1 * differenceInDays
-												,height: xWeekLine1
-											}, styleOffMonthHighlight ], gDayHighlights);
-				}
-			}
-
-
-			var yearText = dateMonth.getFullYear().toString().split("");
-			if(useShortYear) {
-				yearText.shift();
-				yearText.shift();
-			}
-			yearText = yearText.join("");
-			if(useShortMonthName) {
-				yearText = `${monthNames[dateMonth.getMonth()].shortName} ${yearText}`;
-			} else {
-				yearText = `${monthNames[dateMonth.getMonth()].longName} ${yearText}`;
-			}
-
-			var gYear = createSVGDom("g", null, svgElement);
-			createSVGDom("text", [{
-								 x: width / 2
-								,y: xMonthLine / 2
-								,width: width
-								,height: xMonthLine
-								,text: yearText
-							}, styleYearMonthText], gYear);
-
-			var dateWeek = new Date(date.getTime());
-			for(var i=0; i<7; i++) {
-				var weekID = dateWeek.getDay();
-				var gWeek = createSVGDom("g", null, svgElement);
-				createSVGDom("text", [{
-									 x: yWeekLine1*i + (yWeekLine1/2)
-									,y: xMonthLine + ((xWeekLine - xMonthLine)/2)
-									,width: yWeekLine1
-									,height: xWeekLine - xMonthLine
-									,text: weekNames[weekID][useShortWeekName ? "shortName" : "longName"]
-								}, styleWeekDayText], gYear);
-				dateWeek.setDate(dateWeek.getDate()+1);
-			}
-			
-			var didHighLightForX = [];
-			for(var yDate=0; yDate<6; yDate++) {
-				for(var xDate=0; xDate<7; xDate++) {
-					//Date #
-					var dateRect = createSVGDom("rect", [{
-													 x: xDate*yWeekLine1
-													,y: yDate*xWeekLine1 + xWeekLine 
-													,width: yDateLine1
-													,height: xDateLine1
-												}, styleDateNumberBackground], svgElement);
-					createSVGDom("title", {},  dateRect).textContent = date.toLocaleString();
-					var dateScale = Math.min(xDateLine1/100, (yDateLine1*2)/100);
-					var dateString = date.getDate().toString();
-					createSVGDom("text", [{
-										 x: xDate*yWeekLine1 + yDateLine1/2
-										,y: yDate*xWeekLine1 + xWeekLine  + xDateLine1/2
-										,width: yDateLine1
-										,height: xDateLine1
-										,text: dateString
-									}, styleDateText], svgElement);
-
-					if(highLightWeekend) {
-						if(yDate==0) {
-							if(date.getDay() == 0 || date.getDay() == 6) {
-								//console.log("date.getDay():", date.getDay(), "x:", x);
-								//highligh verticle strip
-								if(xDate==0) {
-									//console.log("drawing vert highlight for ", x, date.getDay());
-									createSVGDom("rect", [{
-															 x: yWeekLine1*xDate
-															,y: xWeekLine
-															,width: yWeekLine1
-															,height: height - xWeekLine
-															,style: `clip-path: inset(0px 0px 0px 0px round 0px 0px 0px 10px);`
-														}, styleWeekend], gDayHighlights);
-								} else if(xDate==6) {
-									//console.log("drawing vert highlight for ", y, date.getDay());
-									createSVGDom("rect", [{
-															 x: yWeekLine1*xDate
-															,y: xWeekLine
-															,width: yWeekLine1
-															,height: height - xWeekLine
-															,style: `clip-path: inset(0px 0px 0px 0px round 0px 0px 10px 0px);`
-														}, styleWeekend], gDayHighlights);
-								} else {
-									//console.log("drawing vert highlight for ", y, date.getDay());
-									createSVGDom("rect", [{
-															 x: yWeekLine1*xDate
-															,y: xWeekLine
-															,width: yWeekLine1
-															,height: height - xWeekLine
-														}, styleWeekend], gDayHighlights);
-							  	}
-							}
-						}
-						if(highlightWrongMonths && (date.getMonth() > dateMonth.getMonth() || date.getFullYear() > dateMonth.getFullYear()) && yDate > 0) {
-							if(! didHighLightForX.includes(yDate)) {
-								//console.log("Consdier off month highlight", date.getMonth(),">",dateMonth.getMonth(), "width:", 7-xDate, "x(row)", yDate);
-								didHighLightForX.push(yDate);
-								if(yDate != 5) {
-									createSVGDom("rect", [{
-															 x: yWeekLine1*(xDate)
-															,y: xWeekLine + xWeekLine1*yDate
-															,width: yWeekLine1* (7-xDate)
-															,height: xWeekLine1
-														}, styleOffMonthHighlight], gDayHighlights);
-								} else {
-									var l = "0";
-									var r = 10;
-									if(xDate == 0) {
-										l = "10";
-									}
-									createSVGDom("rect", [{
-															 x: yWeekLine1*(xDate)
-															,y: xWeekLine + xWeekLine1*yDate
-															,width: yWeekLine1* (7-xDate)
-															,height: xWeekLine1
-															,style: `clip-path: inset(0px 0px 0px 0px round 0px 0px ${r}px ${l}px);`
-														}, styleOffMonthHighlight], gDayHighlights);
-								}
-							}
-						}
-					}
-					date.setDate(date.getDate()+1);
-				}
-			}
-			var endedDate = new Date(date.getTime());
-			//console.log("startDate",startDate);
-			//console.log("endedDate",endedDate);
-			//calendarDiv.appendChild(svgElement);
-			//dynamicDiv.appendChild(calendarDiv);
-
-			if(showMonthNavigation) {
-				let domPrevMonth = createSVGDom("text", [{
-									 x: yWeekLine1 / 4
-									,y: xMonthLine / 2
-									,width: yWeekLine1 / 2
-									,height: xMonthLine
-									,text: "⬅️"
-								}, styleMonthChangeControl], svgElement);
-				let domNextMonth = createSVGDom("text", [{
-									 x: width - (yWeekLine1 / 4)
-									,y: xMonthLine / 2
-									,width: yWeekLine1 / 2
-									,height: xMonthLine
-									,text: "➡️"
-								}, styleMonthChangeControl], svgElement);
-				
-				domPrevMonth.addEventListener("click", () => {
-					var prevMonth = new Date(dateMonth.getFullYear(), dateMonth.getMonth()-1, dateMonth.getDate());
-					appendToChild.removeChild(dynamicDiv);
-					console.log(x,y);
-					createCalendar(width, height, x, y, prevMonth, {weekStart ,highLightWeekend ,highlightWrongMonths ,useShortYear ,useShortMonthName ,useShortWeekName ,showMonthNavigation ,styleCalendar ,styleYearMonthDivider ,styleMonthDatesDivider ,styleDatesVerticleDivider ,styleDatesHorizontalDivider ,styleOffMonthHighlight ,styleDateNumberBackground ,styleWeekend ,styleYearMonthText ,styleWeekDayText ,styleDateText, styleMonthChangeControl}, appendToChild);
-				});
-				domNextMonth.addEventListener("click", () => {
-					var nextMonth = new Date(dateMonth.getFullYear(), dateMonth.getMonth()+1, dateMonth.getDate());
-					appendToChild.removeChild(dynamicDiv);
-					console.log(x,y);
-					createCalendar(width, height, x, y, nextMonth, {weekStart ,highLightWeekend ,highlightWrongMonths ,useShortYear ,useShortMonthName ,useShortWeekName ,showMonthNavigation ,styleCalendar ,styleYearMonthDivider ,styleMonthDatesDivider ,styleDatesVerticleDivider ,styleDatesHorizontalDivider ,styleOffMonthHighlight ,styleDateNumberBackground ,styleWeekend ,styleYearMonthText ,styleWeekDayText ,styleDateText, styleMonthChangeControl}, appendToChild);
-				});
-			}
-
-			calendarDiv.addEvent = (eventDate,daysSpan,icon) => {
-				//console.log("Adding event", eventDate);
-				//console.log("width", width, "xMonthLine", xMonthLine);
-				if(startDate <= eventDate && eventDate < endedDate ) {
-					var dateWithoutTime = eventDate.setHours(0, 0, 0, 0);
-					var daysFromStart = Math.ceil(Math.abs(eventDate - startDate) / (1000 * 60 * 60 * 24));
-					//console.log(daysFromStart);
-					var gridX = daysFromStart % 7;
-					var gridY = parseInt(daysFromStart / 7);
-					//console.log(gridX,gridY);
-					var eventX = (gridX * yWeekLine1) + yDateLine1;
-					var eventY = (gridY * xWeekLine1) + xWeekLine + xDateLine1;
-					var eventWidth = yWeekLine1 - yDateLine1;
-					var eventHeight = xDateLine1;
-					var eventTextDom = createSVGDom("text",{
-									x: 0
-									,y: 0
-								},svgElement);
-					eventTextDom.textContent = icon;
-					var eventTextSize = eventTextDom.getBoundingClientRect();
-					//eventTextDom.setAttribute("y", eventTextSize.height + parseFloat(eventTextDom.getAttribute("y")));
-					var eventScale = calculateScale({width: eventWidth, height: eventHeight}, eventTextSize);
-					//${(width - gYearSize.width*gYearScale)/2},
-					eventTextDom.setAttribute("transform", `translate(${eventX}, ${eventY}) scale(${eventScale})`);
-				} else {
-					throw "Date out of bounds.";
-				}
-			};
-			return calendarDiv;
-		}
-		function calculateScale(sizeContainer, sizeContent) {
-			const widthRatio = sizeContainer.width / sizeContent.width;
-			const heightRatio = sizeContainer.height / sizeContent.height;
-			const scale = Math.min(widthRatio, heightRatio);
-			return scale;
-		}
-		function findExistingCalendars(elem) {
-			var highestNumber = 0;
-			var calendarDivs = elem.querySelectorAll('div[id^="calendar"]');
-			calendarDivs.forEach(function(div) {
-				var id = parseInt(div.id.replace('calendar', ''));
-				if (id > highestNumber) {
-					highestNumber = id;
-				}
-			});
-			return highestNumber + 1; // Incrementing to get the next available number
-		}
-		function init() {
-				var width = 800/1;
-				var height = 600/1;
-				var x = 10;
-				var y = 250;
-				var c = createCalendar(width, height, x, y, new Date(), {
-					 useShortMonthName: false
-					,useShortYear: true
-					,useShortWeekName: true
-					,highlightWrongMonths: false
-					,showMonthNavigation: true
-					,styleDateNumberBackground: {
-						 opacity: 0.8
-						,fill: "red"
-						,stroke: "black"
-						,"stroke-width": 2
-					}
-				}, document.body);
-
-				c.addEvent(new Date(2024,1,28),1, "🍌");
-		}
-		window.onload = function() {
-			init();
-		};
-	</script>
+    // Call the init function when the page loads
+    window.onload = function() {
+        init();
+    };
+</script>
+</body>
 </html>
