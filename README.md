@@ -86,13 +86,11 @@ The paramters to createCalendar are:
     bumpScale - When sizing the text the font may seem a little too small,  although it should be correct numericaly, this will alter the size a bit (% of size)
 
 ```
+Events
 
+You can add reocurring events (rules) and single entries
+![image](https://github.com/asdf23/JavaScriptCalendar/assets/4165735/76872f5a-7818-4d0e-9e0c-6a7a20bffb8c)
 
-Todo:
-You can almost add events to the calendar. See the bananna in the example.
-I plan to store these events in localStorage and add a callback so that the
-user can do something with a clicked event. Perhaps show more detail or
-navigate the page.
 
 Sillyness:
 
