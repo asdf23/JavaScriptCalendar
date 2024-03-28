@@ -1,7 +1,8 @@
 # JavaScript Calendar
 Creates a customizable SVG based calendar using JavaScript/SVG 
 
-![Recording 2024-03-27 at 20 01 12](https://github.com/asdf23/JavaScriptCalendar/assets/4165735/bdabc26e-2b24-419c-ac9d-e7090445886e)
+![Recording 2024-03-27 at 20 01 12](https://github.com/asdf23/JavaScriptCalendar/assets/4165735/9085048b-0a6c-4916-bb2b-08c0a9c1dd82)
+
 
 
 This is an HTML file with no content. On page load createCalendar is called. This function is the "meat and potatoes" of this project.
