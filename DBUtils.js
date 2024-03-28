@@ -2,7 +2,7 @@ let dbWasInitilized = false;
 function dbInit() {
 	if(!dbWasInitilized) {
 		if(localStorage.getItem("all_themes") == null) {
-			localStorage.setItem("all_themes", JSON.stringify(["default", "Alt1"]));
+			localStorage.setItem("all_themes", JSON.stringify(["default", "alt1"]));
 			localStorage.setItem("theme_default", JSON.stringify({
 					styleCalendar: {
 									 stroke: "black"
@@ -41,7 +41,8 @@ function dbInit() {
 								}
 					,styleWeekDayText: {
 									"font-family": "sans-serif"
-									,bumpScale: true ? 0.3 : 0
+									//,bumpScale: true ? -0.3 : 0
+									,bumpScale: -0.1
 									,bumpY: 0.08
 								}
 					,styleDateText: {
@@ -55,6 +56,20 @@ function dbInit() {
 									,bumpY: 0.08
 									,cursor: "pointer"
 					}
+					,styleEventSlotBackground: {
+									 fill: "lightgreen"
+									,stroke: "black"
+									,"stroke-width": 0.5
+									,cursor: "pointer"
+								}
+					,styleEventSlotText: {
+									 fill: "red"
+									,bumpScale: -0.09
+									,"font-family": "sans-serif"
+								}
+					,styleEventIconText: {
+									 bumpScale: -0.15
+								}
 				}
 			));
 			console.log("pre set theme_alt1");
@@ -113,6 +128,20 @@ function dbInit() {
 									,bumpScale: 0.3
 									,bumpY: 0.08
 									,cursor: "pointer"
+					,styleEventSlotBackground: {
+									 fill: "lightgreen"
+									,stroke: "black"
+									,"stroke-width": 0.5
+									,cursor: "pointer"
+								}
+					,styleEventSlotText: {
+									 fill: "red"
+									,bumpScale: -0.09
+									,"font-family": "sans-serif"
+								}
+					,styleEventIconText: {
+									 bumpScale: -0.15
+								}
 					}
 				}
 			));
